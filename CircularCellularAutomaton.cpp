@@ -26,14 +26,9 @@ class CircularCellularAutomaton
             const std::vector<unsigned> initialValues)
             : automatonOrder(automatonOrder),
               cellsOrder(cellsOrder),
-              environmentDistance(environmentDistance)
-            {
-                if (initialValues.size() != automatonOrder)
-                    throw std::invalid_argument("automaton order and amount of initial values differ");
-                else
-                    this->values = initialValues;
-                return;
-            }
+              environmentDistance(environmentDistance),
+              values(initialValues)
+            {}
 
         void step(void)
         {
