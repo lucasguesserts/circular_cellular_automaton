@@ -1,6 +1,3 @@
-#ifndef CIRCULAR_CLLULAR_AUTOMATON
-#define CIRCULAR_CLLULAR_AUTOMATON
-
 #include <vector>
 #include <string>
 #include <iostream>
@@ -18,19 +15,6 @@ std::string to_string(std::vector<unsigned> vec)
     return str;
 }
 
-std::string vector_as_string(std::vector<unsigned> vec)
-{
-    std::string str = "";
-    str += "{";
-    for(auto it=vec.cbegin() ; it<vec.cend()-1 ; ++it)
-    {
-        str += std::to_string(*it) + std::string(", ");
-    }
-    str += std::to_string(vec.back());
-    str += "}";
-    return str;
-}
-
 class CircularCellularAutomaton
 {
     public:
@@ -41,14 +25,9 @@ class CircularCellularAutomaton
             const std::vector<unsigned> initialValues)
             : automatonOrder(automatonOrder),
               cellsOrder(cellsOrder),
-              environmentDistance(environmentDistance)
-            {
-                if (initialValues.size() != automatonOrder)
-                    throw std::invalid_argument("automaton order and amount of initial values differ");
-                else
-                    this->values = initialValues;
-                return;
-            }
+              environmentDistance(environmentDistance),
+              values(initialValues)
+            {}
 
         void step(void)
         {
@@ -95,45 +74,12 @@ class CircularCellularAutomaton
             return to_string(this->values);
         }
 
-        std::string as_string(void) const
-        {
-            std::string str = "";
-            str += std::string("Circular Cellular Automaton")                                         + std::string("\n") + \
-                   std::string("---------------------------")                                         + std::string("\n") + \
-                   std::string("automaton order      = ") + std::to_string(this->automatonOrder)      + std::string("\n") + \
-                   std::string("cells order          = ") + std::to_string(this->cellsOrder)          + std::string("\n") + \
-                   std::string("environment distance = ") + std::to_string(this->environmentDistance) + std::string("\n") + \
-                   std::string("values               = ") + vector_as_string(this->values)            + std::string("\n") + \
-                   std::string("---------------------------")                                         ;
-            return str;
-        }
-
     private:
         const unsigned        automatonOrder;
         const unsigned        cellsOrder;
         const unsigned        environmentDistance;
         std::vector<unsigned> values;
 };
-
-void test_case_0(void)
-{
-    const unsigned numberOfSteps = 1;
-    CircularCellularAutomaton automaton(5, 3, 1, {1, 2, 2, 1, 2});
-    automaton.steps(numberOfSteps);
-    std::cout << automaton.as_string() << std::endl;
-    std::cout << "expected result: " + to_string(std::vector<unsigned>{2, 2, 2, 2, 1}) << std::endl;
-    std::cout << std::endl;
-}
-
-void test_case_1(void)
-{
-    const unsigned numberOfSteps = 10;
-    CircularCellularAutomaton automaton(5, 3, 1, {1, 2, 2, 1, 2});
-    automaton.steps(numberOfSteps);
-    std::cout << automaton.as_string() << std::endl;
-    std::cout << "expected result: " + to_string(std::vector<unsigned>{2, 0, 0, 2, 2}) << std::endl;
-    std::cout << std::endl;
-}
 
 int main()
 {
@@ -143,15 +89,11 @@ int main()
     unsigned              numberOfSteps = 0;
     std::vector<unsigned> initialValues{};
 
-    std::cout << "Insert (n, m, d, k): ";
     std::cin >> automatonOrder >> cellsOrder >> environmentDistance >> numberOfSteps;
-    std::cout << "Insert " << std::to_string(automatonOrder) << \
-        " initial values separated by spaces: ";
+    initialValues.resize(automatonOrder);
     for(unsigned i=0 ; i<automatonOrder ; ++i)
     {
-        unsigned value;
-        std::cin >> value;
-        initialValues.push_back(value);
+        std::cin >> initialValues[i];
     }
 
     CircularCellularAutomaton automaton(
@@ -161,9 +103,7 @@ int main()
         initialValues
     );
     automaton.steps(numberOfSteps);
-    std::cout << std::string(automaton) << std::endl;
+    std::cout << std::string(automaton);
 
     return 0;
 }
-
-#endif
