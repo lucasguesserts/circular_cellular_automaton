@@ -122,8 +122,31 @@ void test_case_1(void)
 
 int main()
 {
-    test_case_0();
-    test_case_1();
+    unsigned              automatonOrder = 0;
+    unsigned              cellsOrder = 0;
+    unsigned              environmentDistance = 0;
+    unsigned              numberOfSteps = 0;
+    std::vector<unsigned> initialValues{};
+
+    std::cout << "Insert (n, m, d, k): ";
+    std::cin >> automatonOrder >> cellsOrder >> environmentDistance >> numberOfSteps;
+    std::cout << "Insert " << std::to_string(automatonOrder) << \
+        " initial values separated by spaces: ";
+    for(unsigned i=0 ; i<automatonOrder ; ++i)
+    {
+        unsigned value;
+        std::cin >> value;
+        initialValues.push_back(value);
+    }
+
+    CircularCellularAutomaton automaton(
+        automatonOrder,
+        cellsOrder,
+        environmentDistance,
+        initialValues
+    );
+    automaton.steps(numberOfSteps);
+    std::cout << std::string(automaton) << std::endl;
     return 0;
 }
 
