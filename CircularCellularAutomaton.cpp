@@ -4,17 +4,8 @@
 #include <stdexcept>
 #include <cmath>
 #include <fstream>
-
-std::string to_string(std::vector<unsigned> vec)
-{
-    std::string str = "";
-    for(auto it=vec.cbegin() ; it<vec.cend()-1 ; ++it)
-    {
-        str += std::to_string(*it) + std::string(" ");
-    }
-    str += std::to_string(vec.back());
-    return str;
-}
+#include <iterator>
+#include <sstream>
 
 class CircularCellularAutomaton
 {
@@ -70,12 +61,7 @@ class CircularCellularAutomaton
             return difference > differenceWithOrder ? differenceWithOrder : difference;
         }
 
-        operator std::string() const
-        {
-            return to_string(this->values);
-        }
-
-    private:
+    public:
         const unsigned        automatonOrder;
         const unsigned        cellsOrder;
         const unsigned        environmentDistance;
@@ -92,12 +78,23 @@ int main()
 
     std::fstream inputFile;
     inputFile.open("cell.in", std::ios::in);
-    inputFile >> automatonOrder >> cellsOrder >> environmentDistance >> numberOfSteps;
-    for(unsigned i=0 ; i<automatonOrder ; ++i)
+
     {
-        unsigned value;
-        inputFile >> value;
-        initialValues.push_back(value);
+        std::string line;
+        std::getline(inputFile, line);
+        std::stringstream ss(line);
+        ss >> automatonOrder >> cellsOrder >> environmentDistance >> numberOfSteps;
+    }
+
+    {
+        initialValues.resize(automatonOrder);
+        std::string line;
+        std::getline(inputFile, line);
+        std::stringstream ss(line);
+        for(unsigned i=0 ; i<automatonOrder ; ++i)
+        {
+            ss >> initialValues[i];
+        }
     }
 
     CircularCellularAutomaton automaton(
@@ -110,5 +107,7 @@ int main()
 
     std::fstream outputFile;
     outputFile.open("cell.out", std::ios::out);
-    outputFile << std::string(automaton);
+    std::ostream_iterator<unsigned> output_iterator(outputFile, " ");
+    std::copy(automaton.values.begin(), automaton.values.end(), output_iterator);
+
 }
