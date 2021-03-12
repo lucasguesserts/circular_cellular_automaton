@@ -39,6 +39,7 @@ class CircularCellularAutomaton
                     this->values = initialValues;
                 return;
             }
+
         void step(void)
         {
             auto newValues = this->values;
@@ -49,25 +50,36 @@ class CircularCellularAutomaton
             this->values = newValues;
             return;
         }
+
+        void steps(const unsigned numberOfSteps)
+        {
+            for(auto i=0u ; i<numberOfSteps ; ++i)
+                this->step();
+            return;
+        }
+
         unsigned computeNewValue(const unsigned cell)
         {
             unsigned accumulator = 0;
             for(unsigned otherCell=0 ; otherCell<this->automatonOrder ; ++otherCell)
             {
-                if (this->computeDistance(cell, otherCell) < this->environmentDistance)
+                if (this->computeDistance(cell, otherCell) <= this->environmentDistance)
                 {
                     accumulator += this->values[otherCell];
                 }
             }
-            return accumulator;
+            return accumulator % this->cellsOrder;
         }
+
         unsigned computeDistance(const unsigned lhs, const unsigned rhs)
         {
-            return std::fmin(
-                std::fabs(lhs - rhs),
-                this->automatonOrder - std::fabs(lhs - rhs)
-            );
+            const unsigned difference = lhs > rhs ? lhs-rhs : rhs-lhs;
+            const unsigned differenceWithOrder = this->automatonOrder > difference \
+                ? this->automatonOrder - difference \
+                : difference - this->automatonOrder ;
+            return difference > differenceWithOrder ? differenceWithOrder : difference;
         }
+
         operator std::string() const
         {
             std::string str = "";
@@ -77,7 +89,7 @@ class CircularCellularAutomaton
                    std::string("cells order          = ") + std::to_string(this->cellsOrder)          + std::string("\n") + \
                    std::string("environment distance = ") + std::to_string(this->environmentDistance) + std::string("\n") + \
                    std::string("values               = ") + to_string(this->values)                   + std::string("\n") + \
-                   std::string("---------------------------")                                         + std::string("\n") ;
+                   std::string("---------------------------")                                         ;
             return str;
         }
 
@@ -88,14 +100,30 @@ class CircularCellularAutomaton
         std::vector<unsigned> values;
 };
 
-int main ()
+void test_case_0(void)
 {
-    CircularCellularAutomaton automaton(5, 3, 2, {0, 1, 2, 0, 1});
-    for(unsigned k=0 ; k<5 ; ++k)
-    {
-        automaton.step();
-    }
+    const unsigned numberOfSteps = 1;
+    CircularCellularAutomaton automaton(5, 3, 1, {1, 2, 2, 1, 2});
+    automaton.steps(numberOfSteps);
     std::cout << std::string(automaton) << std::endl;
+    std::cout << "expected result: " + to_string(std::vector<unsigned>{2, 2, 2, 2, 1}) << std::endl;
+    std::cout << std::endl;
+}
+
+void test_case_1(void)
+{
+    const unsigned numberOfSteps = 10;
+    CircularCellularAutomaton automaton(5, 3, 1, {1, 2, 2, 1, 2});
+    automaton.steps(numberOfSteps);
+    std::cout << std::string(automaton) << std::endl;
+    std::cout << "expected result: " + to_string(std::vector<unsigned>{2, 0, 0, 2, 2}) << std::endl;
+    std::cout << std::endl;
+}
+
+int main()
+{
+    test_case_0();
+    test_case_1();
     return 0;
 }
 
