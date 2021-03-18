@@ -7,6 +7,7 @@
 #include <iterator>
 #include <sstream>
 #include <algorithm>
+#include <numeric>
 
 unsigned absDiff(const unsigned lhs, const unsigned rhs)
 {
@@ -29,7 +30,20 @@ class CircularCellularAutomaton
               values(initialValues)
             {}
 
-        void step(void)
+        void steps(const unsigned numberOfSteps)
+        {
+            for(auto i=0u ; i<numberOfSteps ; ++i)
+                this->nextStep();
+            return;
+        }
+
+        std::vector<unsigned> getValues(void)
+        {
+            return this->values;
+        }
+
+    private:
+        void nextStep(void)
         {
             auto newValues = this->values;
             for(unsigned cell=0 ; cell<this->automatonOrder ; ++cell)
@@ -37,13 +51,6 @@ class CircularCellularAutomaton
                 newValues[cell] = this->computeNewValue(cell);
             }
             this->values = newValues;
-            return;
-        }
-
-        void steps(const unsigned numberOfSteps)
-        {
-            for(auto i=0u ; i<numberOfSteps ; ++i)
-                this->step();
             return;
         }
 
@@ -67,7 +74,7 @@ class CircularCellularAutomaton
             return std::min(differenceClockwise, differenceCounterclockwise);
         }
 
-    public:
+    private:
         const unsigned        automatonOrder;
         const unsigned        cellsOrder;
         const unsigned        neighborhoodOrder;
@@ -114,6 +121,7 @@ int main()
     std::fstream outputFile;
     outputFile.open("cell.out", std::ios::out);
     std::ostream_iterator<unsigned> output_iterator(outputFile, " ");
-    std::copy(automaton.values.begin(), automaton.values.end(), output_iterator);
+    std::vector<unsigned> outputValues = automaton.getValues();
+    std::copy(outputValues.begin(), outputValues.end(), output_iterator);
 
 }
