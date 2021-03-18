@@ -6,6 +6,14 @@
 #include <fstream>
 #include <iterator>
 #include <sstream>
+#include <algorithm>
+
+unsigned absDiff(const unsigned lhs, const unsigned rhs)
+{
+    return lhs > rhs \
+           ? lhs - rhs \
+           : rhs - lhs;
+}
 
 class CircularCellularAutomaton
 {
@@ -13,11 +21,11 @@ class CircularCellularAutomaton
         CircularCellularAutomaton(
             const unsigned              automatonOrder,
             const unsigned              cellsOrder,
-            const unsigned              environmentDistance,
+            const unsigned              neighborhoodOrder,
             const std::vector<unsigned> initialValues)
             : automatonOrder(automatonOrder),
               cellsOrder(cellsOrder),
-              environmentDistance(environmentDistance),
+              neighborhoodOrder(neighborhoodOrder),
               values(initialValues)
             {}
 
@@ -44,7 +52,7 @@ class CircularCellularAutomaton
             unsigned accumulator = 0;
             for(unsigned otherCell=0 ; otherCell<this->automatonOrder ; ++otherCell)
             {
-                if (this->computeDistance(cell, otherCell) <= this->environmentDistance)
+                if (this->computeDistance(cell, otherCell) <= this->neighborhoodOrder)
                 {
                     accumulator += this->values[otherCell];
                 }
@@ -54,17 +62,15 @@ class CircularCellularAutomaton
 
         unsigned computeDistance(const unsigned lhs, const unsigned rhs) const
         {
-            const unsigned difference = lhs > rhs ? lhs-rhs : rhs-lhs;
-            const unsigned differenceWithOrder = this->automatonOrder > difference \
-                ? this->automatonOrder - difference \
-                : difference - this->automatonOrder ;
-            return difference > differenceWithOrder ? differenceWithOrder : difference;
+            const unsigned differenceClockwise        = absDiff(lhs, rhs);
+            const unsigned differenceCounterclockwise = absDiff(this->automatonOrder, differenceClockwise);
+            return std::min(differenceClockwise, differenceCounterclockwise);
         }
 
     public:
         const unsigned        automatonOrder;
         const unsigned        cellsOrder;
-        const unsigned        environmentDistance;
+        const unsigned        neighborhoodOrder;
         std::vector<unsigned> values;
 };
 
@@ -72,7 +78,7 @@ int main()
 {
     unsigned              automatonOrder = 0;
     unsigned              cellsOrder = 0;
-    unsigned              environmentDistance = 0;
+    unsigned              neighborhoodOrder = 0;
     unsigned              numberOfSteps = 0;
     std::vector<unsigned> initialValues{};
 
@@ -83,7 +89,7 @@ int main()
         std::string line;
         std::getline(inputFile, line);
         std::stringstream ss(line);
-        ss >> automatonOrder >> cellsOrder >> environmentDistance >> numberOfSteps;
+        ss >> automatonOrder >> cellsOrder >> neighborhoodOrder >> numberOfSteps;
     }
 
     {
@@ -100,7 +106,7 @@ int main()
     CircularCellularAutomaton automaton(
         automatonOrder,
         cellsOrder,
-        environmentDistance,
+        neighborhoodOrder,
         initialValues
     );
     automaton.steps(numberOfSteps);
