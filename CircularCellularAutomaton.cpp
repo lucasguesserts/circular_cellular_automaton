@@ -28,7 +28,7 @@ class CircularCellularAutomaton
             const unsigned automatonOrder,
             const unsigned cellsOrder,
             const unsigned neighborhoodOrder,
-            Vector         initialValues)
+            const Vector & initialValues)
             : automatonOrder(automatonOrder),
               cellsOrder(cellsOrder),
               neighborhoodOrder(neighborhoodOrder),
@@ -56,7 +56,7 @@ class CircularCellularAutomaton
     private:
         void nextStep(void)
         {
-            auto newValues = this->values;
+            Vector newValues(this->automatonOrder, 0u);
             for(unsigned cell=0 ; cell<this->automatonOrder ; ++cell)
             {
                 newValues[cell] = this->computeNewValue(cell);
@@ -67,8 +67,8 @@ class CircularCellularAutomaton
 
         unsigned computeNewValue(const unsigned cell) const
         {
-            VectorIteratorConst neighborhoodBegin = this->values.cbegin() + cell;
-            VectorIteratorConst neighborhoodEnd   = neighborhoodBegin + 2 * this->neighborhoodOrder;
+            VectorIteratorConst neighborhoodBegin = this->valuesBegin + cell - this->neighborhoodOrder;
+            VectorIteratorConst neighborhoodEnd   = this->valuesBegin + cell + this->neighborhoodOrder + 1;
             return std::accumulate(
                     neighborhoodBegin,
                     neighborhoodEnd,
@@ -83,12 +83,12 @@ class CircularCellularAutomaton
             return std::min(differenceClockwise, differenceCounterclockwise);
         }
 
-        void setValues(Vector & values)
+        void setValues(const Vector & values)
         {
             std::copy(
-                this->valuesBegin,
-                this->valuesEnd,
-                values.begin()
+                values.cbegin(),
+                values.cend(),
+                this->valuesBegin
             );
             this->copyLeftValues();
             this->copyRightValues();
@@ -97,24 +97,20 @@ class CircularCellularAutomaton
 
         void copyLeftValues(void)
         {
-            VectorIterator leftCopyBegin = this->values.begin();
-            VectorIterator leftCopyEnd   = leftCopyBegin + this->neighborhoodOrder;
             std::copy(
-                leftCopyBegin,
-                leftCopyEnd,
-                this->valuesEnd - this->neighborhoodOrder
+                this->valuesEnd - this->neighborhoodOrder,
+                this->valuesEnd,
+                this->values.begin()
             );
             return;
         }
 
         void copyRightValues(void)
         {
-            VectorIterator rightCopyBegin = this->valuesEnd;
-            VectorIterator rightCopyEnd   = this->values.end();
             std::copy(
-                rightCopyBegin,
-                rightCopyEnd,
-                this->valuesBegin
+                this->valuesBegin,
+                this->valuesBegin + this->neighborhoodOrder,
+                this->values.end() - this->neighborhoodOrder
             );
             return;
         }
