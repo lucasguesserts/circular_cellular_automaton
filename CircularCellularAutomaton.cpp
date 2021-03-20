@@ -8,6 +8,10 @@
 #include <sstream>
 #include <algorithm>
 #include <numeric>
+#include <iterator>
+
+using VectorIterator = std::vector<unsigned>::iterator;
+using Vector = std::vector<unsigned>;
 
 unsigned absDiff(const unsigned lhs, const unsigned rhs)
 {
@@ -20,15 +24,16 @@ class CircularCellularAutomaton
 {
     public:
         CircularCellularAutomaton(
-            const unsigned              automatonOrder,
-            const unsigned              cellsOrder,
-            const unsigned              neighborhoodOrder,
-            const std::vector<unsigned> initialValues)
+            const unsigned automatonOrder,
+            const unsigned cellsOrder,
+            const unsigned neighborhoodOrder,
+            const Vector   initialValues)
             : automatonOrder(automatonOrder),
               cellsOrder(cellsOrder),
-              neighborhoodOrder(neighborhoodOrder),
-              values(initialValues)
-            {}
+              neighborhoodOrder(neighborhoodOrder)
+            {
+                this->setValues(initialValues);
+            }
 
         void steps(const unsigned numberOfSteps)
         {
@@ -74,20 +79,25 @@ class CircularCellularAutomaton
             return std::min(differenceClockwise, differenceCounterclockwise);
         }
 
+        void setValues(const Vector & values)
+        {
+            this->values = values;
+        }
+
     private:
-        const unsigned        automatonOrder;
-        const unsigned        cellsOrder;
-        const unsigned        neighborhoodOrder;
-        std::vector<unsigned> values;
+        const unsigned automatonOrder;
+        const unsigned cellsOrder;
+        const unsigned neighborhoodOrder;
+        Vector         values;
 };
 
 int main()
 {
-    unsigned              automatonOrder = 0;
-    unsigned              cellsOrder = 0;
-    unsigned              neighborhoodOrder = 0;
-    unsigned              numberOfSteps = 0;
-    std::vector<unsigned> initialValues{};
+    unsigned automatonOrder = 0;
+    unsigned cellsOrder = 0;
+    unsigned neighborhoodOrder = 0;
+    unsigned numberOfSteps = 0;
+    Vector   initialValues{};
 
     std::fstream inputFile;
     inputFile.open("cell.in", std::ios::in);
@@ -121,7 +131,7 @@ int main()
     std::fstream outputFile;
     outputFile.open("cell.out", std::ios::out);
     std::ostream_iterator<unsigned> output_iterator(outputFile, " ");
-    std::vector<unsigned> outputValues = automaton.getValues();
+    Vector outputValues = automaton.getValues();
     std::copy(outputValues.begin(), outputValues.end(), output_iterator);
 
 }
