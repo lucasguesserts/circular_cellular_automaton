@@ -1,25 +1,15 @@
 #include <vector>
 #include <string>
-#include <iostream>
-#include <stdexcept>
-#include <cmath>
-#include <fstream>
-#include <iterator>
-#include <sstream>
 #include <algorithm>
 #include <numeric>
 #include <iterator>
+#include <iostream>
+#include <fstream>
+#include <sstream>
 
-using VectorIterator = std::vector<unsigned>::iterator;
-using VectorIteratorConst = std::vector<unsigned>::const_iterator;
-using Vector = std::vector<unsigned>;
-
-unsigned absDiff(const unsigned lhs, const unsigned rhs)
-{
-    return lhs > rhs \
-           ? lhs - rhs \
-           : rhs - lhs;
-}
+using Vector              = std::vector<unsigned>;
+using VectorIterator      = Vector::iterator;
+using VectorIteratorConst = Vector::const_iterator;
 
 class CircularCellularAutomaton
 {
@@ -57,30 +47,36 @@ class CircularCellularAutomaton
         void nextStep(void)
         {
             Vector newValues(this->automatonOrder, 0u);
-            for(unsigned cell=0 ; cell<this->automatonOrder ; ++cell)
+            unsigned currentValue = this->computeInitialValue();
+            newValues[0u] = currentValue % this->cellsOrder;
+            for(unsigned cell=1u ; cell<this->automatonOrder ; ++cell)
             {
-                newValues[cell] = this->computeNewValue(cell);
+                currentValue = this->computeNextValue(currentValue, cell);
+                newValues[cell] = currentValue % this->cellsOrder;
             }
             this->setValues(newValues);
             return;
         }
 
-        unsigned computeNewValue(const unsigned cell) const
+        unsigned computeInitialValue() const
         {
+            constexpr unsigned cell = 0u;
             VectorIteratorConst neighborhoodBegin = this->valuesBegin + cell - this->neighborhoodOrder;
-            VectorIteratorConst neighborhoodEnd   = this->valuesBegin + cell + this->neighborhoodOrder + 1;
+            VectorIteratorConst neighborhoodEnd   = this->valuesBegin + cell + this->neighborhoodOrder + 1u;
             return std::accumulate(
-                    neighborhoodBegin,
-                    neighborhoodEnd,
-                    0u
-                ) % this->cellsOrder;
+                neighborhoodBegin,
+                neighborhoodEnd,
+                0u
+            );
         }
 
-        unsigned computeDistance(const unsigned lhs, const unsigned rhs) const
+        unsigned computeNextValue(const unsigned currentValue, const unsigned cell) const
         {
-            const unsigned differenceClockwise        = absDiff(lhs, rhs);
-            const unsigned differenceCounterclockwise = absDiff(this->automatonOrder, differenceClockwise);
-            return std::min(differenceClockwise, differenceCounterclockwise);
+            VectorIteratorConst previousFirstValue = this->valuesBegin + cell - this->neighborhoodOrder - 1u;
+            VectorIteratorConst currentLastValue   = this->valuesBegin + cell + this->neighborhoodOrder;
+            return currentValue
+                - *previousFirstValue
+                + *currentLastValue;
         }
 
         void setValues(const Vector & values)
@@ -125,10 +121,10 @@ class CircularCellularAutomaton
 
 int main()
 {
-    unsigned automatonOrder = 0;
-    unsigned cellsOrder = 0;
-    unsigned neighborhoodOrder = 0;
-    unsigned numberOfSteps = 0;
+    unsigned automatonOrder    = 0u;
+    unsigned cellsOrder        = 0u;
+    unsigned neighborhoodOrder = 0u;
+    unsigned numberOfSteps     = 0u;
     Vector   initialValues{};
 
     std::fstream inputFile;
