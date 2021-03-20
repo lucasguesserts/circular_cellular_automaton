@@ -11,6 +11,7 @@
 #include <iterator>
 
 using VectorIterator = std::vector<unsigned>::iterator;
+using VectorIteratorConst = std::vector<unsigned>::const_iterator;
 using Vector = std::vector<unsigned>;
 
 unsigned absDiff(const unsigned lhs, const unsigned rhs)
@@ -27,12 +28,16 @@ class CircularCellularAutomaton
             const unsigned automatonOrder,
             const unsigned cellsOrder,
             const unsigned neighborhoodOrder,
-            const Vector & initialValues)
+            Vector         initialValues)
             : automatonOrder(automatonOrder),
               cellsOrder(cellsOrder),
-              neighborhoodOrder(neighborhoodOrder)
+              neighborhoodOrder(neighborhoodOrder),
+              values(automatonOrder+2*neighborhoodOrder, 0u)
             {
+                this->valuesBegin = this->values.begin() + this->neighborhoodOrder;
+                this->valuesEnd   = this->values.end()   - this->neighborhoodOrder;
                 this->setValues(initialValues);
+                return;
             }
 
         void steps(const unsigned numberOfSteps)
@@ -42,9 +47,10 @@ class CircularCellularAutomaton
             return;
         }
 
-        const Vector & getValues(void) const
+        const Vector getValues(void) const
         {
-            return this->values;
+            Vector values(this->valuesBegin, this->valuesEnd);
+            return values;
         }
 
     private:
@@ -55,21 +61,19 @@ class CircularCellularAutomaton
             {
                 newValues[cell] = this->computeNewValue(cell);
             }
-            this->values = newValues;
+            this->setValues(newValues);
             return;
         }
 
         unsigned computeNewValue(const unsigned cell) const
         {
-            unsigned accumulator = 0;
-            for(unsigned otherCell=0 ; otherCell<this->automatonOrder ; ++otherCell)
-            {
-                if (this->computeDistance(cell, otherCell) <= this->neighborhoodOrder)
-                {
-                    accumulator += this->values[otherCell];
-                }
-            }
-            return accumulator % this->cellsOrder;
+            VectorIteratorConst neighborhoodBegin = this->values.cbegin() + cell;
+            VectorIteratorConst neighborhoodEnd   = neighborhoodBegin + 2 * this->neighborhoodOrder;
+            return std::accumulate(
+                    neighborhoodBegin,
+                    neighborhoodEnd,
+                    0u
+                ) % this->cellsOrder;
         }
 
         unsigned computeDistance(const unsigned lhs, const unsigned rhs) const
@@ -79,9 +83,40 @@ class CircularCellularAutomaton
             return std::min(differenceClockwise, differenceCounterclockwise);
         }
 
-        void setValues(const Vector & values)
+        void setValues(Vector & values)
         {
-            this->values = values;
+            std::copy(
+                this->valuesBegin,
+                this->valuesEnd,
+                values.begin()
+            );
+            this->copyLeftValues();
+            this->copyRightValues();
+            return;
+        }
+
+        void copyLeftValues(void)
+        {
+            VectorIterator leftCopyBegin = this->values.begin();
+            VectorIterator leftCopyEnd   = leftCopyBegin + this->neighborhoodOrder;
+            std::copy(
+                leftCopyBegin,
+                leftCopyEnd,
+                this->valuesEnd - this->neighborhoodOrder
+            );
+            return;
+        }
+
+        void copyRightValues(void)
+        {
+            VectorIterator rightCopyBegin = this->valuesEnd;
+            VectorIterator rightCopyEnd   = this->values.end();
+            std::copy(
+                rightCopyBegin,
+                rightCopyEnd,
+                this->valuesBegin
+            );
+            return;
         }
 
     private:
@@ -89,6 +124,7 @@ class CircularCellularAutomaton
         const unsigned cellsOrder;
         const unsigned neighborhoodOrder;
         Vector         values;
+        VectorIterator valuesBegin, valuesEnd;
 };
 
 int main()
