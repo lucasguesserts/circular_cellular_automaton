@@ -27,7 +27,7 @@ class CircularCellularAutomaton
             const unsigned automatonOrder,
             const unsigned cellsOrder,
             const unsigned neighborhoodOrder,
-            const Vector   initialValues)
+            const Vector & initialValues)
             : automatonOrder(automatonOrder),
               cellsOrder(cellsOrder),
               neighborhoodOrder(neighborhoodOrder)
@@ -42,7 +42,7 @@ class CircularCellularAutomaton
             return;
         }
 
-        std::vector<unsigned> getValues(void)
+        const Vector & getValues(void) const
         {
             return this->values;
         }
@@ -131,7 +131,7 @@ int main()
     std::fstream outputFile;
     outputFile.open("cell.out", std::ios::out);
     std::ostream_iterator<unsigned> output_iterator(outputFile, " ");
-    Vector outputValues = automaton.getValues();
+    const Vector outputValues = automaton.getValues();
     std::copy(outputValues.begin(), outputValues.end(), output_iterator);
 
 }
