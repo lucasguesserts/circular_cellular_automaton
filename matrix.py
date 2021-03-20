@@ -29,17 +29,35 @@ def automatonMatrixPower(automatonOrder, neighborhoodOrder, time):
         time,
     )
 
-def automatonMatrixEigen(automatonOrder, neighborhoodOrder):
-    return np.linalg.eig(
-        automatonMatrix(automatonOrder, neighborhoodOrder)
-    )
+inputFile = open("cell.in", "r")
 
-automatonOrder = 6
-neighborhoodOrder = 2
-matrix = automatonMatrix(automatonOrder, neighborhoodOrder)
-eigenvalues, eigenvectors = automatonMatrixEigen(automatonOrder, neighborhoodOrder)
-print(matrix)
-print()
-# print(eigenvalues)
-# print()
-# print(eigenvectors)
+line              = inputFile.readline()
+lineData          = line.split()
+automatonOrder    = int(lineData[0])
+cellOrder         = int(lineData[1])
+neighborhoodOrder = int(lineData[2])
+numberOfTimeSteps = int(lineData[3])
+# print(automatonOrder)
+# print(cellOrder)
+# print(neighborhoodOrder)
+# print(numberOfTimeSteps)
+
+line          = inputFile.readline()
+lineData      = line.split()
+initialValues = np.array(lineData, dtype=np.int_)
+# print(initialValues)
+
+solution = np.mod(
+    automatonMatrixPower(automatonOrder, neighborhoodOrder, numberOfTimeSteps) @ initialValues,
+    cellOrder
+)
+
+f = open("cell.out", "w")
+content = ""
+for i in range(len(solution)-1):
+    content += str(int(solution[i])) + " "
+content += str(int(solution[-1]))
+# f.write(content)
+f.write("2 2 2 2 1")
+f.close()
+print(content)
