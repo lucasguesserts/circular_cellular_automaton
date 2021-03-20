@@ -11,6 +11,17 @@ using Vector              = std::vector<unsigned>;
 using VectorIterator      = Vector::iterator;
 using VectorIteratorConst = Vector::const_iterator;
 
+std::string to_string(Vector vec)
+{
+    std::string str = "";
+    for(auto it=vec.cbegin() ; it<vec.cend()-1 ; ++it)
+    {
+        str += std::to_string(*it) + std::string(" ");
+    }
+    str += std::to_string(vec.back());
+    return str;
+}
+
 class CircularCellularAutomaton
 {
     public:
@@ -41,6 +52,11 @@ class CircularCellularAutomaton
         {
             Vector values(this->valuesBegin, this->valuesEnd);
             return values;
+        }
+
+        operator std::string() const
+        {
+            return to_string(this->getValues());
         }
 
     private:
@@ -127,39 +143,37 @@ int main()
     unsigned numberOfSteps     = 0u;
     Vector   initialValues{};
 
-    std::fstream inputFile;
-    inputFile.open("cell.in", std::ios::in);
+    std::cin >> automatonOrder >> cellsOrder >> neighborhoodOrder >> numberOfSteps;
 
+    initialValues.resize(automatonOrder);
+    for(unsigned i=0 ; i<automatonOrder ; ++i)
     {
-        std::string line;
-        std::getline(inputFile, line);
-        std::stringstream ss(line);
-        ss >> automatonOrder >> cellsOrder >> neighborhoodOrder >> numberOfSteps;
+        std::cin >> initialValues[i];
     }
 
+    while(std::cin)
     {
+
+        CircularCellularAutomaton automaton(
+            automatonOrder,
+            cellsOrder,
+            neighborhoodOrder,
+            initialValues
+        );
+        automaton.steps(numberOfSteps);
+
+        std::cout << std::string(automaton) << std::endl;
+        //std::ostream_iterator<unsigned> output_iterator(std::cout, " ");
+        //const Vector outputValues = automaton.getValues();
+        //std::copy(outputValues.begin(), outputValues.end(), output_iterator);
+
+        std::cin >> automatonOrder >> cellsOrder >> neighborhoodOrder >> numberOfSteps;
+
         initialValues.resize(automatonOrder);
-        std::string line;
-        std::getline(inputFile, line);
-        std::stringstream ss(line);
         for(unsigned i=0 ; i<automatonOrder ; ++i)
         {
-            ss >> initialValues[i];
+            std::cin >> initialValues[i];
         }
     }
-
-    CircularCellularAutomaton automaton(
-        automatonOrder,
-        cellsOrder,
-        neighborhoodOrder,
-        initialValues
-    );
-    automaton.steps(numberOfSteps);
-
-    std::fstream outputFile;
-    outputFile.open("cell.out", std::ios::out);
-    std::ostream_iterator<unsigned> output_iterator(outputFile, " ");
-    const Vector outputValues = automaton.getValues();
-    std::copy(outputValues.begin(), outputValues.end(), output_iterator);
 
 }
