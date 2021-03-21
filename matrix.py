@@ -29,17 +29,23 @@ def automatonMatrixPower(automatonOrder, neighborhoodOrder, time):
         time,
     )
 
-def automatonMatrixEigen(automatonOrder, neighborhoodOrder):
-    return np.linalg.eig(
-        automatonMatrix(automatonOrder, neighborhoodOrder)
-    )
+automatonOrder = 5
+neighborhoodOrder = 1
+cellOrder = 3
+numberOfTimeSteps = 10
+initialState = np.array([
+    1, 2, 2, 1, 2
+])
 
-automatonOrder = 6
-neighborhoodOrder = 2
-matrix = automatonMatrix(automatonOrder, neighborhoodOrder)
-eigenvalues, eigenvectors = automatonMatrixEigen(automatonOrder, neighborhoodOrder)
-print(matrix)
-print()
-# print(eigenvalues)
-# print()
-# print(eigenvectors)
+matrix = automatonMatrixPower(
+    automatonOrder,
+    neighborhoodOrder,
+    numberOfTimeSteps
+)
+
+solution = np.mod(
+    matrix @ initialState,
+    cellOrder
+)
+
+print(solution)
